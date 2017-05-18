@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+require('./locations');
 
 /* Connect to MongoDB */
 var dbURI = 'mongodb://localhost/Loc8r';
@@ -29,20 +30,20 @@ var gracefulShutdown = function(msg, callback) {
 /* Nodemon uses SIGUSR2 */
 process.once('SIGUSR2', function () {
     gracefulShutdown('nodemon restart', function () {
-    	process.kill(process.pid, 'SIGUSR2');
+        process.kill(process.pid, 'SIGUSR2');
     })
 });
 
 /* CTRL-C in terminal uses SIGINT */
 process.once('SIGINT', function () {
     gracefulShutdown('app termination', function () {
-    	process.exit(0);
+        process.exit(0);
     })
 });
 
 /* Heroku uses SIGTERM */
 process.once('SIGTERM', function () {
     gracefulShutdown('heroku app shutdown', function () {
-    	process.exit(0);
+        process.exit(0);
     })
 });
