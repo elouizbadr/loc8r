@@ -6,10 +6,13 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 /* Require Mongoose for MongoDB Connection */
-require('./app_server/models/db');
+require('./app_api/models/db');
 
 var index = require('./app_server/routes/index');
 var users = require('./app_server/routes/users');
+
+/* Require API routes file */
+var apiRoutes = require('./app_api/routes/index');
 
 var app = express();
 
@@ -27,6 +30,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+
+// Catch API requests
+app.use('/api', apiRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
