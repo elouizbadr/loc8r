@@ -27,6 +27,67 @@ module.exports.locationsList = function (req, res) {
     sendJsonResponse(res, 200, {status: "success"});
 };
 
+// Return NearBy Locations
+module.exports.locationsListByDistance = function (req, res) {
+    // point declaration to geoNear()
+    var lng = parseFloat(req.query.lng);
+    var lat = parseFloat(req.query.lat);
+    var point = {
+        type: "Point",
+        coordinates: [lng, lat]
+    };
+    // Callback method to geoNear()
+    var theEarth = (function () {
+        var earthRadius = 6371; //Earth Radius is Kms
+        
+        // Function to convert Distance to Radius
+        var getDistanceFromRads = function (rads) {
+            return parseFloat(rads * earthRadius);
+        }
+        // Function to convert Radius to Distance
+        var getRadsFromDistance = function (distance) {
+            return parseFloat(distance / earthRadius);
+        }
+        // Expose the two previous functions
+        return {
+            getDistanceFromRads: getDistanceFromRads,
+            getRadsFromDistance: getRadsFromDistance
+        }
+    })();
+    // options to geoNear()
+    var geoOptions = {
+        spherical: true, // Set the EARTH as Spherical, otherwise use "flat: true"
+        maxDistance: theEarth.getRadsFromDistance(20), // Maximum Distance of 20 Kms
+        num: 10 // Limit the number of results returned on 10
+    };
+    // If one or both URL params were not found
+    if(!lng || !lat) {
+        sendJsonResponse(res, 404, {
+            message: "lng and lat query parameters are required!"
+        });
+    }
+    // Else, geoNear() definition
+    locationModel.geoNear(point, geoOptions, function (err, results, stats){
+        var nearLocations = []; // Empty Locations list
+        if(err) {
+            sendJsonResponse(res, 404, err);
+        } else {
+            results.forEach(function (doc) { // For each found Location
+                nearLocations.push({ // Add that location to the List
+                    distance: theEarth.getDistanceFromRads(doc.dis),
+                    name: doc.obj.name,
+                    address: doc.obj.address,
+                    rating: doc.obj.rating,
+                    facilities: doc.obj.facilities,
+                    _id: doc.obj._id
+                });
+            });
+            // Finally, send back found Locations
+            sendJsonResponse(res, 200, nearLocations);
+        }
+    });
+};
+
 // Create a new Location
 module.exports.locationsCreateOne = function (req, res) {
     sendJsonResponse(res, 200, {status: "success"});

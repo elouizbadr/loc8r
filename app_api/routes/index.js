@@ -6,7 +6,7 @@ var ctrlLocations = require('../controllers/locations');
 var ctrlReviews = require('../controllers/reviews');
 
 /* Define "Locations" API Routes */
-router.get('/locations', ctrlLocations.locationsList);
+router.get('/locations', ctrlLocations.locationsListByDistance);
 router.post('/locations', ctrlLocations.locationsCreateOne);
 router.get('/locations/:locationid', ctrlLocations.locationsReadOne);
 router.put('/locations/:locationid', ctrlLocations.locationsUpdateOne);
