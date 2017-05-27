@@ -24,7 +24,7 @@ var sendJsonResponse = function (res, status, content) {
 
 // Return all Locations
 module.exports.locationsList = function (req, res) {
-    sendJsonResponse(res, 200, {status: "success"});
+    sendJsonResponse(res, 200, {status: "Not implemented yet!"});
 };
 
 // Return NearBy Locations
@@ -90,7 +90,35 @@ module.exports.locationsListByDistance = function (req, res) {
 
 // Create a new Location
 module.exports.locationsCreateOne = function (req, res) {
-    sendJsonResponse(res, 200, {status: "success"});
+    // Create a Location data object from HTTP Posted Request data
+    console.log(req.body.address);
+    var postedData = new locationModel({
+        name: req.body.name,
+        address: req.body.address,
+        facilities: req.body.facilities,
+        coords: [parseFloat(req.body.lng), parseFloat(req.body.lat)],
+        openingTimes: [{
+            days: req.body.days1,
+            openingH: req.body.openingH1,
+            closingH: req.body.closingH1,
+            closed: req.body.closed1
+        }, {
+            days: req.body.days2,
+            openingH: req.body.openingH2,
+            closingH: req.body.closingH2,
+            closed: req.body.closed2
+        }]
+    });
+    
+    // Call Mongoose model save() function
+    postedData.save( function (err, location) { 
+        if (err) { // Check for errors
+            sendJsonResponse(res, 404, err);
+        } else { // Else, return saved data
+            sendJsonResponse(res, 201, location);
+        }
+    });
+
 };
 // Return a specific Location
 module.exports.locationsReadOne = function (req, res) {
