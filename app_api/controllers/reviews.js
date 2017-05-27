@@ -62,7 +62,39 @@ module.exports.reviewsReadOne = function (req, res) {
 
 // Create a new Review
 module.exports.reviewsCreateOne = function (req, res) {
-    returnJsonResponse(res, 200, {status: "success"});
+  if (req.params && req.params.locationid) {
+    locationModel
+        .findById(req.params.locationid)
+        .select('reviews')
+        .exec( function(err, location) {
+            if(!location) {
+                returnJsonResponse(res, 404, {message: "No Location found with this ID!"});
+                return;
+            } else if (err) {
+                returnJsonResponse(res, 404, err);
+                return;
+            }
+            // Adding the Review to the Reviews subdocument using JS Push()
+            location.reviews.push({
+                author: req.body.author,
+                rating: req.body.rating,
+                reviewText: req.body.reviewText
+            });
+            // Save the updated Location parent document and return saved Review as a Response
+            location.save(function (err, savedLocation) {
+                var savedReview;
+                if (err) {
+                    returnJsonResponse(res, 404, err);
+                } else {
+                    savedReview = savedLocation.reviews[savedLocation.reviews.length - 1];
+                    returnJsonResponse(res, 201, savedReview);
+                }
+            });
+            
+        });
+  } else {
+    returnJsonResponse(res, 404, {message: "No Location ID was given in the request!"});
+  };
 };
 
 // Update a specific Review
